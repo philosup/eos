@@ -29,6 +29,18 @@ class sevenchain : public eosio::contract
       }
    };
    
+   //@abi table tableinfo
+   struct tableinfo{
+      uint64_t id;
+      string tablename;
+      uint64_t last_id;
+      uint64_t count;
+
+	   uint64_t primary_key()const { return id; }
+
+      EOSLIB_SERIALIZE( tableinfo, (id)(tablename)(last_id)(count) )
+   };
+
    //@abi table poker
    struct poker {
 	   uint64_t id;
@@ -70,6 +82,9 @@ class sevenchain : public eosio::contract
    };
 
 
+   typedef eosio::multi_index< N(tableinfo), tableinfo> tableinfos;
+   tableinfos tables;
+
    typedef eosio::multi_index< N(poker), poker> poker_index;
    poker_index pokers;
 
@@ -81,6 +96,7 @@ class sevenchain : public eosio::contract
 
    sevenchain(account_name self)
    :eosio::contract(self)
+   ,tables(_self, _self)
    ,pokers(_self, _self)
    ,slots(_self, _self)
    {}
@@ -98,7 +114,21 @@ class sevenchain : public eosio::contract
            r.rng.assign(rng.begin(), rng.end());
        });
 
-       //poker_itr->print();
+       auto info = tables.find(0);
+       if(info == tables.end()) {
+          tables.emplace(_self, [&](auto& r){
+             r.id = 0;
+             r.tablename = "poker";
+             r.last_id = poker_itr->id;
+             r.count = 1;
+          });
+       }else{
+          tables.modify(info, _self,  [&](auto& r){
+             r.last_id = poker_itr->id;
+             r.count++;
+          });
+       }
+       
    }
 
    //@abi action
@@ -112,6 +142,22 @@ class sevenchain : public eosio::contract
            r.participants.assign(participants.begin(), participants.end());
            r.rng.assign(rng.begin(), rng.end());
       });
+       
+       auto info = tables.find(1);
+       if(info == tables.end()) {
+          tables.emplace(_self, [&](auto& r){
+             r.id = 1;
+             r.tablename = "slot";
+             r.last_id = slot_itr->id;
+             r.count = 1;
+          });
+       }else{
+          tables.modify(info, _self,  [&](auto& r){
+             r.last_id = slot_itr->id;
+             r.count++;
+          });
+       }
+       
    }
 
 };
