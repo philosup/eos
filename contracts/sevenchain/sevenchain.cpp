@@ -192,7 +192,7 @@ class sevenchain : public eosio::contract
            r.rng.assign(rng.begin(), rng.end());
       });
        
-       auto info = tables.find(1);
+       auto info = tables.find(2);
        if(info == tables.end()) {
           tables.emplace(_self, [&](auto& r){
              r.id = 1;
