@@ -195,7 +195,7 @@ class sevenchain : public eosio::contract
        auto info = tables.find(2);
        if(info == tables.end()) {
           tables.emplace(_self, [&](auto& r){
-             r.id = 1;
+             r.id = 2;
              r.tablename = "item";
              r.last_id = item_itr->id;
              r.count = 1;
